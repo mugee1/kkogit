@@ -1,0 +1,27 @@
+# 꼬깃 테마: Light Mode 하나로 고정한다(기기 설정과 상관없이 라이트). 다크 모드는 없다.
+# [theme]만 두면 Streamlit이 라이트/다크 전환을 막는다. styles/theme.css의 컬러 토큰과 같은 값을 쓴다.
+[theme]
+base = "light"
+primaryColor = "#FF5A66"             # --primary (Vivid Coral): 선택·활성 상태, 주요 버튼
+backgroundColor = "#F5F5F7"          # --bg
+secondaryBackgroundColor = "#FFFFFF" # --surface: 입력 영역, 사이드바 위젯
+textColor = "#242424"                # --text
+borderColor = "#E5E5E9"              # --line (Border)
+showWidgetBorder = true
+font = "'Pretendard Variable':https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+baseFontSize = 17
+baseRadius = "6px"                   # --radius-input
+buttonRadius = "8px"                 # --radius-btn
+headingFontSizes = ["28px", "20px", "17px", "15px", "13px", "11px"]
+headingFontWeights = [700, 600, 600, 500, 500, 500]
+
+[client]
+toolbarMode = "minimal"
+showSidebarNavigation = false
+
+[server]
+# OneDrive 폴더에서는 기본 파일 감시가 변경을 놓쳐 예전 모듈이 남는다. 폴링으로 확인한다.
+fileWatcherType = "poll"
+
+[browser]
+gatherUsageStats = false
