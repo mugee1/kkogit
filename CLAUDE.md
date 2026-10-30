@@ -75,7 +75,7 @@
 | 토큰 | CSS 변수 | HEX | 용도 |
 | --- | --- | --- | --- |
 | Primary (Vivid Coral) | `--primary` | #FF5A66 | 브랜드 로고, CTA, 활성 상태 |
-| On Primary | `--on-primary` | #242424 | Primary 배경 위의 텍스트·아이콘 |
+| On Primary | `--on-primary` | #FFFFFF | Primary 배경 위의 텍스트·아이콘 |
 | Background | `--bg` | #F5F5F7 | 앱 기본 배경 |
 | Surface | `--surface` | #FFFFFF | 카드, 바텀시트, 입력 영역 |
 | Text Primary | `--text` | #242424 | 제목, 본문 |
@@ -83,6 +83,7 @@
 | Border | `--line` | #E5E5E9 | 카드·입력 필드 경계, 구분선 |
 
 - Text Secondary는 기준안 #73737B가 Background 위에서 4.3:1로 AA에 못 미쳐 #6C6C74로 조정했다(2026-10-29 확정).
+- On Primary는 #242424(대비 5.1:1)였으나 #FFFFFF로 바꿨다(2026-10-30 결정). 대비 3.0:1로 일반 텍스트 AA(4.5:1)에는 못 미친다는 점을 알고 정한 예외다.
 - 파생 토큰: `--text-disabled` = Text Primary 38% — 비활성 요소 (새 색상이 아니라 투명도)
 
 **적용 원칙**
@@ -90,7 +91,7 @@
 - Primary는 Vivid Coral #FF5A66 하나로 통일한다. 이전 Signal Coral #E95F45, Soft Jade #A7E1CE, Cobalt #3155CD는 쓰지 않는다.
 - 코랄은 CTA, 활성·선택 상태, 브랜드 요소에 집중해서 쓴다. 한 화면에 코랄 요소가 많아지지 않게 한다.
 - **코랄을 글자색으로 쓰지 않는다**(밝은 배경 위 대비 3:1 미만). 코랄은 버튼 배경, 아이콘, 표시 바·점에만 쓴다.
-- 주요 버튼(CTA): Primary 배경 + On Primary(#242424) 텍스트. 보조 버튼: Surface 배경(또는 Outline) + Text Primary 텍스트.
+- 주요 버튼(CTA): Primary 배경 + On Primary(#FFFFFF) 텍스트. 보조 버튼: Surface 배경(또는 Outline) + Text Primary 텍스트.
 - 상태 표현: 선택·활성 = Primary, 기본 = Text Primary, 보조·비활성 탭 = Text Secondary, 비활성(disabled) = `--text-disabled`.
 - 오류·경고·성공 같은 의미 색상은 Primary로 대신하지 않는다. 필요해지면 먼저 정의하고 확인받는다.
 - 컬러는 `styles/theme.css`의 CSS 변수로만 참조한다. Streamlit 위젯 색은 `.streamlit/config.toml`의 `[theme]`에 같은 값을 맞춘다.
@@ -106,8 +107,8 @@
 | Text Secondary / Surface | 5.2:1 | 통과 |
 | Primary 텍스트 / Background | 2.8:1 | 미달 — 코랄 글자는 쓰지 않는다 |
 | Primary 아이콘 / Surface | 3.0:1 | 아이콘·표시 기준(3:1) 통과 |
-| #242424 / Primary 배경 | 5.1:1 | 통과 — Primary 배경 위 텍스트는 이것을 쓴다 |
-| 흰색(#FFFFFF) / Primary 배경 | 3.0:1 | 미달 — 쓰지 않는다 |
+| 흰색(#FFFFFF) / Primary 배경 | 3.0:1 | 일반 텍스트 미달 — 알고 정한 예외(2026-10-30). Primary 배경 위 텍스트는 이것을 쓴다 |
+| #242424 / Primary 배경 | 5.1:1 | 통과 — 이전 On Primary |
 | Border / Surface | 1.3:1 | 장식용 경계. 입력 필드는 포커스 시 Primary 테두리와 안내 문구로 구분한다 |
 
 ### 타이포그래피

@@ -8,7 +8,7 @@
 :root {
   /* 컬러 토큰 (Light Mode) */
   --primary: #FF5A66;         /* Vivid Coral: 로고, CTA, 활성 상태. Light에서 글자색으로 쓰지 않는다 */
-  --on-primary: #242424;      /* Primary 배경 위 텍스트 (대비 5.1:1) */
+  --on-primary: #FFFFFF;      /* Primary 배경 위 텍스트·아이콘 (대비 3.0:1, 2026-10-30 결정) */
   --bg: #F5F5F7;              /* 앱 기본 배경 */
   --surface: #FFFFFF;         /* 카드, 바텀시트, 입력 영역 */
   --text: #242424;            /* Text Primary: 제목, 본문 */
