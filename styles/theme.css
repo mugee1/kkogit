@@ -38,9 +38,10 @@
 
 /* ---------- Streamlit 기본 UI 숨김 ---------- */
 /* 헤더는 투명하게만 두고, 사이드바(데모 컨트롤) 여는 버튼은 남긴다 */
-header[data-testid="stHeader"] {
+header[data-testid="stHeader"],
+header[data-testid="stHeader"] [data-testid="stToolbar"] {
   background: transparent;
-  pointer-events: none;  /* 투명 헤더가 본문 터치를 가로채지 않게 */
+  pointer-events: none;  /* 투명 헤더·툴바가 본문 터치(뒤로 가기 등)를 가로채지 않게 */
 }
 /* 데모 컨트롤(사이드바) 여는 버튼은 오른쪽 위로. 왼쪽 위는 뒤로 가기 자리 */
 [data-testid="stExpandSidebarButton"] {
@@ -228,6 +229,7 @@ input, textarea, select {
   position: absolute;
   inset: 0;
   z-index: 2;
+  width: 100%;  /* 카드 전체가 눌리게 (라벨 글자 너비로 줄어들지 않게) */
 }
 [class*="st-key-open_"] .stButton,
 [class*="st-key-open_"] button {

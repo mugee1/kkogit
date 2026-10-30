@@ -24,11 +24,12 @@ def tappable(key: str, html: str, label: str, width: int | str = "stretch") -> b
     """HTML로 그린 카드 전체를 누를 수 있게 한다.
 
     카드 위에 투명한 st.button을 덮는다. label은 스크린 리더가 읽는 이름이다.
+    버튼은 width="stretch"로 카드 너비를 다 채운다. 기본값이면 라벨 글자 너비만큼만 눌린다.
     모양은 theme.css의 [class*="st-key-tap_"], [class*="st-key-open_"] 규칙.
     """
     with st.container(key=f"tap_{key}", gap=None, width=width):
         st.html(html)
-        return st.button(label, key=f"open_{key}")
+        return st.button(label, key=f"open_{key}", width="stretch")
 
 
 def back_button(label: str, page: str) -> None:
