@@ -399,7 +399,26 @@ input, textarea, select {
   font-weight: 500;
 }
 
-/* ---------- 마음을 건넨 사람들: 정사각형 색 카드 2열 (components/letter_card.py의 person_card) ---------- */
+/* ---------- 마음을 건넨 사람들: 정사각형 색 카드 2열 (components/people.py, letter_card.py의 person_card) ---------- */
+/* 홈 섹션 제목 + 오른쪽 '모두 보기' */
+.st-key-people_head {
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  margin-top: 16px;
+}
+.st-key-people_head .kk-section-title {
+  margin-top: 0;
+}
+.st-key-people_all button {
+  min-height: 44px;
+  padding-right: 0;
+  color: var(--text-secondary);
+}
+.st-key-people_all button p {
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+}
 .st-key-people {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr));

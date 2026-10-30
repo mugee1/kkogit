@@ -5,7 +5,8 @@ from datetime import datetime
 import streamlit as st
 
 import db
-from components.letter_card import arrived_banner, person_card, today_card
+from components.letter_card import arrived_banner, today_card
+from components.people import HOME_PEOPLE, home_order, people_grid
 from components.ui import large_title, section_title, tappable
 
 
@@ -50,17 +51,19 @@ if today_items:
             st.switch_page("views/today.py")
 
 # ---------- 마음을 건넨 사람들 (사람별 편지 묶음) ----------
+# 홈에는 2×2(4명)까지만 둔다. 더 많으면 '모두 보기'로 사람들 화면에 모아 둔다.
 # 사람 수 같은 숫자는 쌓이는 압박이 되어 보여 주지 않는다
 bundles = db.list_bundles(user.id)
-section_title("마음을 건넨 사람들")
+with st.container(key="people_head", horizontal=True, vertical_alignment="center"):
+    section_title("마음을 건넨 사람들")
+    if len(bundles) > HOME_PEOPLE:
+        if st.button("모두 보기", key="people_all", type="tertiary", icon=":material/chevron_right:", icon_position="right"):
+            st.switch_page("views/people.py")
 if not bundles:
     st.html('<p class="kk-empty">서랍이 아직 가벼워요. 오래 간직하고 싶은 편지가 있다면 넣어 둘까요?</p>')
     if st.button("손편지 보관하기", type="primary", width="stretch"):
         st.switch_page("views/keep.py")
 else:
-    # 정사각형 색 카드 2열 (격자는 theme.css의 .st-key-people)
-    with st.container(key="people"):
-        for summary in bundles:
-            rel = summary.relation
-            if tappable(f"bundle_{rel.id}", person_card(summary), f"{rel.partner_name}님과의 편지 묶음 열기"):
-                st.switch_page("views/bundle.py", query_params={"relation": rel.id})
+    picked = people_grid(home_order(bundles)[:HOME_PEOPLE], bundles)
+    if picked:
+        st.switch_page("views/bundle.py", query_params={"relation": picked})

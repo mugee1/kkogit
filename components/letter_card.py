@@ -124,19 +124,22 @@ def card_image_uri(color: int) -> str | None:
     return None
 
 
-def person_color(relation_id: int) -> int:
-    """사람마다 정해진 카드 색(1~6). 묶음 id로 정해서 다시 열어도 같은 색이다."""
-    return (relation_id - 1) % PERSON_COLORS + 1
+def person_colors(bundles: list[BundleSummary]) -> dict[int, int]:
+    """사람마다 정해진 카드 색(1~6): 서랍에 들어온 순서대로 돌아가며 붙인다.
+
+    묶음 id 대신 순서를 쓰는 건, 지운 묶음 때문에 id가 건너뛰어도 처음 6명은 서로 다른 색이 되게 하려는 것.
+    """
+    ids = sorted(s.relation.id for s in bundles)
+    return {rid: i % PERSON_COLORS + 1 for i, rid in enumerate(ids)}
 
 
-def person_card(summary: BundleSummary) -> str:
+def person_card(summary: BundleSummary, color: int) -> str:
     """마음을 건넨 사람 한 명: 정사각형 색 카드 + 이름 + 관계·마지막 날짜.
 
     카드 위 이미지는 assets/cards/card_{색 번호}.*로 따로 넣는다. 없으면 색만 보인다.
     편지 수처럼 쌓이는 숫자는 보여 주지 않는다 (조용한 화면).
     """
     rel = summary.relation
-    color = person_color(rel.id)
     uri = card_image_uri(color)
     image = f'<img src="{uri}" alt="">' if uri else ""
     meta = [RELATION_LABELS[rel.type]]

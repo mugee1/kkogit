@@ -110,6 +110,7 @@ SUB_PAGES = {
         st.Page("views/letter.py", title="편지", url_path="letter"),
         st.Page("views/write.py", title="답장 쓰기", url_path="write"),
         st.Page("views/today.py", title="오늘의 편지", url_path="today"),
+        st.Page("views/people.py", title="마음을 건넨 사람들", url_path="people"),
     ],
 }
 page = st.navigation(
