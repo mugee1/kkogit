@@ -1,4 +1,4 @@
-"""답장 쓰기: 직전 편지(접어서 보기) → 본문 → 우표(바텀시트) → [보내기] → 접혀서 날아가는 모션.
+"""답장 쓰기: 직전 편지(접어서 보기) → 우표(바텀시트) → 본문 → [보내기] → 접혀서 날아가는 모션.
 
 쓰던 본문과 고른 우표는 데모 사용자·묶음마다 session_state에 남아,
 직전 편지를 다시 읽으러 나갔다 와도 이어서 쓸 수 있다.
@@ -86,6 +86,11 @@ def stamp_sheet() -> None:
                     st.rerun()
 
 
+# ---------- 우표 (첫 화면에서 보이도록 본문 위에) ----------
+stamp = ss[STAMP_KEY]
+if tappable("write_stamp", stamp_row(stamp), "우표 바꾸기" if stamp else "우표 고르기"):
+    stamp_sheet()
+
 # ---------- 본문 ----------
 section_title("편지")
 body = st.text_area(
@@ -99,11 +104,6 @@ body = st.text_area(
 if body.strip() and ss.get("write_notice"):
     ss.pop("write_notice")
 st.html(f'<p class="kk-hint kk-write-from">From. {escape(me.nickname)}</p>')
-
-# ---------- 우표 ----------
-stamp = ss[STAMP_KEY]
-if tappable("write_stamp", stamp_row(stamp), "우표 바꾸기" if stamp else "우표 고르기"):
-    stamp_sheet()
 
 # ---------- 보내기 (하단 고정, 엄지 영역) ----------
 # 입력 중에는 본문이 아직 서버에 없을 수 있어 버튼을 막지 않고, 누른 뒤에 확인한다.

@@ -31,10 +31,13 @@ def active_tab_css(active: str | None) -> str:
     """
 
 
-def render_tabbar(pages: dict[str, st.Page], active: str | None) -> None:
-    """화면 하단에 고정되는 탭 바. 위치·모양은 styles/theme.css의 .st-key-tabbar."""
+def render_tabbar(pages: dict[str, st.Page], current: st.Page) -> None:
+    """화면 하단에 고정되는 탭 바. 위치·모양은 styles/theme.css의 .st-key-tabbar.
+
+    하위 화면(편지 묶음 등)에서는 서랍 탭이 선택돼 보여도, 누르면 서랍 첫 화면으로 돌아간다.
+    """
     with st.container(key="tabbar", horizontal=True):
         for tab_id, label, icon in TABS:
             if st.button(label, icon=icon, key=f"tab_{tab_id}", type="tertiary"):
-                if tab_id != active:
+                if pages[tab_id].url_path != current.url_path:
                     st.switch_page(pages[tab_id])

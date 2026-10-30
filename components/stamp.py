@@ -1,16 +1,21 @@
 """우표: 쓴 편지 오른쪽 위에 붙는 우표. 그림은 assets/stamps/*.svg, 모양은 styles/theme.css의 .kk-stamp.
 
-SVG는 HTML 안에 그대로 넣는다. 그래야 선(.ln)과 코랄 포인트(.pt) 색을 theme.css 토큰으로 칠할 수 있다.
+st.html은 <svg> 태그를 지우므로 SVG를 <img>(data URI)로 넣는다. 이미지 안에는 CSS 변수가 닿지 않아,
+선(.ln)과 코랄 포인트(.pt) 색은 theme.css의 토큰 값을 읽어 SVG 안에 채운다.
 디자이너 우표가 생기면 같은 파일 이름으로 바꿔 끼우면 된다.
 """
 
 from __future__ import annotations
 
+import base64
+import re
 from functools import cache
 from html import escape
 from pathlib import Path
 
-STAMP_DIR = Path(__file__).parent.parent / "assets" / "stamps"
+ROOT = Path(__file__).parent.parent
+STAMP_DIR = ROOT / "assets" / "stamps"
+THEME_CSS = ROOT / "styles" / "theme.css"
 
 # 우표 id: 이름. 바텀시트에 이 순서로 보인다.
 STAMPS: dict[str, str] = {
@@ -22,9 +27,26 @@ STAMPS: dict[str, str] = {
 DEFAULT_STAMP = "sun"  # 우표 종류가 생기기 전의 'default' 우표도 해와 언덕으로 보여 준다
 
 
+def _token(name: str) -> str:
+    """theme.css의 컬러 토큰 값(HEX)."""
+    css = THEME_CSS.read_text(encoding="utf-8")
+    return re.search(rf"--{name}:\s*(#[0-9A-Fa-f]{{6}})", css).group(1)
+
+
 @cache
-def _svg(stamp_id: str) -> str:
-    return (STAMP_DIR / f"{stamp_id}.svg").read_text(encoding="utf-8")
+def _stamp_uri(stamp_id: str) -> str:
+    """선·포인트 색을 채운 우표 SVG의 data URI."""
+    style = (
+        "<style>"
+        f".ln{{fill:none;stroke:{_token('text-secondary')};stroke-width:1.6;"
+        "stroke-linecap:round;stroke-linejoin:round}"
+        ".ln--dash{stroke-dasharray:2 3}"
+        f".pt{{fill:{_token('primary')}}}"
+        "</style>"
+    )
+    svg = (STAMP_DIR / f"{stamp_id}.svg").read_text(encoding="utf-8")
+    svg = svg.replace(">", ">" + style, 1)  # 여는 <svg ...> 태그 바로 뒤에 넣는다
+    return "data:image/svg+xml;base64," + base64.b64encode(svg.encode("utf-8")).decode()
 
 
 def stamp_name(stamp: str) -> str:
@@ -38,7 +60,7 @@ def stamp_html(stamp: str | None, extra_class: str = "") -> str:
     stamp_id = stamp if stamp in STAMPS else DEFAULT_STAMP
     return (
         f'<span class="kk-stamp {extra_class}" role="img" aria-label="{stamp_name(stamp_id)} 우표">'
-        f"{_svg(stamp_id)}</span>"
+        f'<img src="{_stamp_uri(stamp_id)}" alt=""></span>'
     )
 
 

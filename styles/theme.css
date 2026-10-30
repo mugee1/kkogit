@@ -3,6 +3,7 @@
    Light Mode x Vivid Coral x Hand-drawn Minimal (라이트 모드만 쓴다)
    - 컬러는 아래 토큰 변수로만 참조한다. HEX를 직접 쓰지 않는다.
    - .streamlit/config.toml의 [theme] 위젯 색도 같은 값으로 맞춘다.
+   - 주석을 포함해 여는 꺾쇠(태그 시작 문자)를 쓰지 않는다. st.html이 style 블록을 통째로 지운다.
    ============================================================ */
 
 :root {
@@ -46,6 +47,8 @@ header[data-testid="stHeader"] {
   position: fixed;
   top: calc(var(--safe-top) + 8px);
   right: 8px;
+  width: 44px;
+  height: 44px;
   pointer-events: auto;
   opacity: 0.6;
 }
@@ -453,7 +456,7 @@ input, textarea, select {
 }
 
 /* ---------- 버튼 상태 (Streamlit 기본 버튼) ---------- */
-/* 주요 버튼: Primary 배경 + On Primary 텍스트. 흰 글자는 대비 3.0:1이라 쓰지 않는다 */
+/* 주요 버튼: Primary 배경 + On Primary 텍스트 */
 button[kind="primary"],
 button[kind="primary"]:hover,
 button[kind="primary"]:focus:not(:active) {
@@ -471,6 +474,18 @@ button[disabled] {
 }
 [data-testid="stButtonGroup"] button[data-selected="true"] p {
   font-weight: 600;
+}
+
+/* 터치 영역 최소 44pt: 필·세그먼트, 접기 줄, 바텀시트 닫기 */
+[data-testid="stButtonGroup"] button {
+  min-height: 44px;
+}
+.stExpander summary {
+  min-height: 44px;
+}
+div.stDialog button[aria-label="Close"] {
+  width: 44px;
+  height: 44px;
 }
 
 /* ============================================================
@@ -751,7 +766,15 @@ div.stDialog button[kind="secondary"] {
   from { transform: translateY(0); }
   to { transform: translateY(180px); }
 }
-/* 보내기 (components/motion.py의 fold_and_send): 접힌 편지가 오른쪽 위로 날아간다. 서랍 없음 */
+/* 보내기 (components/motion.py의 fold_and_send): 접힌 편지가 오른쪽 위로 날아간다. 서랍 없음
+   날아간 뒤에는 모션 자리를 접어, 완료 문구가 화면 위쪽에 오게 한다 */
+.kk-motion-send {
+  animation: kk-collapse 240ms ease-in-out 660ms both;
+}
+@keyframes kk-collapse {
+  from { height: 240px; margin-top: 8px; }
+  to { height: 0; margin-top: 0; }
+}
 .kk-motion-send .kk-motion-paper {
   top: 40px;
   animation: kk-fly 320ms ease-in 340ms both;
@@ -1172,7 +1195,8 @@ div.stDialog button[kind="secondary"] {
 }
 
 /* 우표 (components/stamp.py): 톱니 테두리 + 손그림 SVG(assets/stamps/)
-   SVG 안의 선은 .ln, 코랄 포인트는 .pt. 코랄은 우표 하나에 한 곳만 쓴다. */
+   st.html은 SVG 태그를 지우므로 img 태그(data URI)로 넣는다. 선·코랄 포인트 색은 stamp.py가
+   이 파일의 토큰 값을 읽어 SVG 안에 채운다. 코랄은 우표 하나에 한 곳만 쓴다. */
 .kk-stamp {
   position: absolute;
   top: 32px;
@@ -1185,23 +1209,10 @@ div.stDialog button[kind="secondary"] {
   transform: rotate(4deg);
   overflow: hidden;
 }
-.kk-stamp svg {
+.kk-stamp img {
   display: block;
   width: 100%;
   height: 100%;
-}
-.kk-stamp .ln {
-  fill: none;
-  stroke: var(--text-secondary);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.kk-stamp .ln--dash {
-  stroke-dasharray: 2 3;
-}
-.kk-stamp .pt {
-  fill: var(--primary);
 }
 .kk-stamp--inline {  /* 종이 위가 아니라 목록·바텀시트 안에 놓인 우표 */
   position: relative;

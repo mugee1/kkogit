@@ -413,9 +413,13 @@ def list_arrived(user_id: int) -> list[LetterInDrawer]:
     return sorted(arrived, key=lambda x: (x.letter.written_at, x.letter.id), reverse=True)
 
 
+RECENT_DAYS = 7  # '오늘 다시 펼쳐 볼 편지'에서 빼는 최근 편지 기간
+
+
 def pick_today_letters(user_id: int, on: date, k: int = 3) -> list[LetterInDrawer]:
     """'오늘 다시 펼쳐 볼 편지': 이미 읽은 받은 편지 중에서 날짜마다 다르게 k통을 고른다.
 
+    받은 지 RECENT_DAYS일이 안 된 편지는 '다시' 펼쳐 볼 편지가 아니라서 뺀다.
     같은 사용자·같은 날짜면 항상 같은 편지가 나온다(데모 날짜로 시연 가능).
     """
     candidates = [
@@ -423,7 +427,7 @@ def pick_today_letters(user_id: int, on: date, k: int = 3) -> list[LetterInDrawe
         if _is_received(user_id, x.letter)
         and not _is_unread(user_id, x.letter)
         and x.letter.written_at
-        and x.letter.written_at <= on
+        and (on - x.letter.written_at).days >= RECENT_DAYS
     ]
     rng = random.Random(f"{user_id}:{on.isoformat()}")
     return rng.sample(candidates, min(k, len(candidates)))

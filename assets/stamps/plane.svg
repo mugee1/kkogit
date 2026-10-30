@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 50">
-  <!-- 종이비행기. 색은 theme.css의 .kk-stamp .ln(선) / .pt(코랄 포인트) -->
+  <!-- 종이비행기. 선(.ln)·코랄 포인트(.pt) 색은 components/stamp.py가 theme.css 토큰으로 채운다 -->
   <path class="pt" d="M18.4 27.2l1.2 7.8 3.6-4.6z"/>
   <path class="ln" d="M5.8 22.4l27.6-10.6-8.6 24.2-6.4-8.8z"/>
   <path class="ln" d="M18.4 27.2l15-15.4"/>

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 50">
-  <!-- 해와 언덕. 색은 theme.css의 .kk-stamp .ln(선) / .pt(코랄 포인트) -->
+  <!-- 해와 언덕. 선(.ln)·코랄 포인트(.pt) 색은 components/stamp.py가 theme.css 토큰으로 채운다 -->
   <circle class="pt" cx="27.5" cy="13.2" r="5"/>
   <path class="ln" d="M3.5 38.5c4.6-6.6 8.8-10 12.8-6.4 3.6 3.2 6 2.8 9.4-1.2 3.2-3.6 7-2.2 11 3"/>
   <path class="ln" d="M7 45.2c6.2-1 18.6-1.4 26.6-.2"/>

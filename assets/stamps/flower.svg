@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 50">
-  <!-- 꽃 한 송이. 색은 theme.css의 .kk-stamp .ln(선) / .pt(코랄 포인트) -->
+  <!-- 꽃 한 송이. 선(.ln)·코랄 포인트(.pt) 색은 components/stamp.py가 theme.css 토큰으로 채운다 -->
   <path class="ln" d="M20.6 45.5c-.9-6.2-.4-12.4.7-19.4"/>
   <path class="ln" d="M20.7 38.2c-4-.3-7.2-2.8-7.9-6.6 3.8-.4 6.8 2 7.9 6.6z"/>
   <path class="ln" d="M21.1 34.2c3-1.8 6.5-1.6 8.7.4-2.6 2.4-6.1 2.4-8.7-.4z"/>
