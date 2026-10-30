@@ -8,9 +8,10 @@ import random
 import sqlite3
 import uuid
 from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import date, datetime
 from pathlib import Path
-from typing import Iterator
+from typing import Callable, Iterator
 
 from PIL import Image, ImageOps
 from pillow_heif import register_heif_opener
@@ -60,10 +61,22 @@ CREATE INDEX IF NOT EXISTS idx_letters_receiver ON letters(receiver_user_id, sta
 """
 
 
+# 어느 DB 파일을 쓸지. 기본은 data/app.db.
+# 베타 테스트에서는 접속자마다 샘플 서랍 사본을 쓰도록 app.py가 바꾼다(beta/sandbox.py).
+_path_provider: Callable[[], Path] = lambda: DB_PATH
+_path_override: ContextVar[Path | None] = ContextVar("db_path_override", default=None)
+
+
+def set_path_provider(provider: Callable[[], Path]) -> None:
+    """connect()가 열 DB 파일을 정하는 함수를 바꾼다."""
+    global _path_provider
+    _path_provider = provider
+
+
 @contextmanager
 def connect() -> Iterator[sqlite3.Connection]:
     """요청마다 연결을 열고 닫는다. (Streamlit은 실행마다 스레드가 다를 수 있다)"""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(_path_override.get() or _path_provider())
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     try:
@@ -73,8 +86,15 @@ def connect() -> Iterator[sqlite3.Connection]:
         conn.close()
 
 
-def init_db() -> None:
-    """테이블을 만들고, 비어 있으면 샘플 데이터를 넣는다."""
+def init_db(path: Path | None = None) -> None:
+    """테이블을 만들고, 비어 있으면 샘플 데이터를 넣는다. path를 주면 그 파일에 만든다."""
+    if path is not None:
+        token = _path_override.set(path)
+        try:
+            init_db()
+        finally:
+            _path_override.reset(token)
+        return
     IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     with connect() as conn:
         conn.executescript(SCHEMA)
@@ -430,15 +450,19 @@ def list_arrived(user_id: int) -> list[LetterInDrawer]:
 RECENT_DAYS = 7  # '오늘 다시 펼쳐 볼 편지'에서 빼는 최근 편지 기간
 
 
-def pick_today_letters(user_id: int, on: date, k: int = 3) -> list[LetterInDrawer]:
+def pick_today_letters(
+    user_id: int, on: date, k: int = 3, exclude: frozenset[int] = frozenset()
+) -> list[LetterInDrawer]:
     """'오늘 다시 펼쳐 볼 편지': 이미 읽은 받은 편지 중에서 날짜마다 다르게 k통을 고른다.
 
     받은 지 RECENT_DAYS일이 안 된 편지는 '다시' 펼쳐 볼 편지가 아니라서 뺀다.
     같은 사용자·같은 날짜면 항상 같은 편지가 나온다(데모 날짜로 시연 가능).
+    exclude: 고르지 않을 편지 id (베타 테스트에서 '찾아 펼쳐 보기' 과업의 정답 편지).
     """
     candidates = [
         x for x in _letters_in_drawer(user_id)
-        if _is_received(user_id, x.letter)
+        if x.letter.id not in exclude
+        and _is_received(user_id, x.letter)
         and not _is_unread(user_id, x.letter)
         and x.letter.written_at
         and (on - x.letter.written_at).days >= RECENT_DAYS

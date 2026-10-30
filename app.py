@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import re
-from datetime import date
 from pathlib import Path
 
 import streamlit as st
 
 import db
+from beta import flow as beta
 from components.tabbar import active_tab_css, render_tabbar
+from components.ui import now
 
 st.set_page_config(
     page_title="꼬깃",
@@ -27,10 +28,15 @@ def _init_db_once() -> bool:
 
 _init_db_once()
 
+# 베타 테스트: 접속자마다 샘플 서랍 사본을 쓴다 (실제 편지·사진은 올리지 않는다)
+BETA = beta.enabled()
+if BETA:
+    beta.setup()
+
 # ---------- 세션 상태 기본값 ----------
 users = db.list_users()
 st.session_state.setdefault("demo_user_id", users[0].id)
-st.session_state.setdefault("demo_date", date.today())
+st.session_state.setdefault("demo_date", now().date())
 
 # 데모 컨트롤 위젯의 값은 st.switch_page로 화면을 옮길 때 지워진다.
 # 실제 값은 demo_user_id·demo_date에 따로 두고, 매 실행 위젯에 다시 채운다.
@@ -52,19 +58,20 @@ bg_color = re.search(r"--bg:\s*(#[0-9A-Fa-f]{6})", css).group(1)
 
 # ---------- 사이드바: 데모 컨트롤 (실제 서비스 UI 아님) ----------
 with st.sidebar:
-    st.subheader("데모 컨트롤")
-    st.caption("시연용 설정이에요. 실제 앱 화면에는 나오지 않아요.")
-    nicknames = {u.id: u.nickname for u in users}
-    st.segmented_control(
-        "사용자",
-        options=list(nicknames),
-        format_func=nicknames.get,
-        required=True,
-        key="_demo_user",
-        on_change=_on_demo_user_change,
-        width="stretch",
-    )
-    st.date_input("데모 날짜", key="_demo_date", on_change=_on_demo_date_change, format="YYYY.MM.DD")
+    if not BETA:  # 베타 테스트에서는 테스터가 사용자·날짜를 바꾸지 않게 숨긴다
+        st.subheader("데모 컨트롤")
+        st.caption("시연용 설정이에요. 실제 앱 화면에는 나오지 않아요.")
+        nicknames = {u.id: u.nickname for u in users}
+        st.segmented_control(
+            "사용자",
+            options=list(nicknames),
+            format_func=nicknames.get,
+            required=True,
+            key="_demo_user",
+            on_change=_on_demo_user_change,
+            width="stretch",
+        )
+        st.date_input("데모 날짜", key="_demo_date", on_change=_on_demo_date_change, format="YYYY.MM.DD")
 
     # iPhone '홈 화면에 추가' 시 Safe Area(env())가 동작하도록 viewport와 웹앱 메타를 보강한다.
     # 사이드바에 두어 본문 레이아웃에 빈 공간이 생기지 않게 한다.
@@ -140,7 +147,18 @@ if st.session_state.pop("demo_user_switched", False):
 # ---------- 전역 스타일 ----------
 # theme.css + 선택된 탭 스타일을 한 번에 주입한다.
 css += active_tab_css(active_tab)
+if BETA:
+    css += (Path(__file__).parent / "beta" / "beta.css").read_text(encoding="utf-8")
 st.html(f"<style>{css}</style>")
+
+# ---------- 베타 테스트: 시작 안내·마지막 질문은 앱 대신, 과업 안내는 화면 위에 ----------
+if BETA:
+    if beta.blocks_app():
+        beta.render_screen()
+        st.stop()
+    beta.track(page)
+    beta.task_banner()
+    beta.rate_dialog()
 
 render_tabbar(PAGES, page)
 

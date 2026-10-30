@@ -6,6 +6,7 @@
 import streamlit as st
 
 import db
+from beta.flow import today_exclude
 from components.letter_card import today_card
 from components.ui import back_button, large_title, tappable
 
@@ -15,7 +16,7 @@ today = st.session_state.demo_date
 back_button("서랍", "views/drawer.py")
 large_title("오늘 꺼내 보면 좋을 편지", f"{today:%m월 %d일}에 골라 둔 편지예요")
 
-items = db.pick_today_letters(user_id, today)
+items = db.pick_today_letters(user_id, today, exclude=today_exclude())
 if not items:
     st.html('<p class="kk-empty">오늘은 골라 둔 편지가 없어요</p>')
     st.stop()

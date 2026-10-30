@@ -2,10 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from html import escape
 
 import streamlit as st
+
+# 한국 시간. 배포 서버(Streamlit Community Cloud)는 UTC라서, 인사·오늘 날짜가 어긋나지 않게 맞춘다
+KST = timezone(timedelta(hours=9))
+
+
+def now() -> datetime:
+    return datetime.now(KST)
 
 
 def large_title(title: str, subtitle: str | None = None) -> None:

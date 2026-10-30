@@ -1,0 +1,169 @@
+/* ============================================================
+   베타 테스트 모드에서만 theme.css 뒤에 붙는다 (app.py).
+   theme.css와 같이 여는 꺾쇠를 쓰지 않는다.
+   ============================================================ */
+
+/* 데모 컨트롤(사이드바)은 테스터에게 보이지 않게 */
+[data-testid="stSidebar"],
+[data-testid="stExpandSidebarButton"] {
+  display: none !important;
+}
+
+/* ---------- 과업 안내 ---------- */
+.st-key-beta_task {
+  gap: 4px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+.kk-beta-task span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.kk-beta-task p {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text);
+}
+.st-key-beta_skip button {
+  min-height: 44px;
+  padding: 0;
+  color: var(--text-secondary);
+}
+
+/* ---------- 과업 뒤 질문 ---------- */
+.kk-beta-scale {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: -4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.kk-beta-scale span:last-child {
+  text-align: right;
+}
+.kk-beta-q {
+  margin: 16px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+.kk-beta-note {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+div.stDialog .st-key-beta_rate_next button {
+  justify-content: center;
+}
+
+/* ---------- 시작 안내 ---------- */
+.kk-beta-intro p,
+.kk-beta-intro li {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.kk-beta-intro ul {
+  margin: 16px 0 24px;
+  padding-left: 20px;
+}
+.kk-beta-intro li {
+  margin-bottom: 8px;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   A안(이전 홈) 전용: beta/home_a.py
+   ============================================================ */
+.kk-a-today {
+  --cover-accent: var(--text-secondary);
+}
+.kk-a-paper-text {
+  margin: 0;
+  padding: 14px 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-line;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 9;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.kk-a-today .kk-postmark {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+}
+.kk-a-meta {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.kk-a-meta b {
+  font-weight: 600;
+  color: var(--text);
+}
+/* 오늘 다시 펼쳐 볼 편지: 가로 캐러셀. 화면 끝까지 스크롤되도록 좌우 여백만큼 밖으로 넓힌다 */
+.st-key-today_carousel {
+  width: calc(100% + 2 * var(--gutter)) !important;
+  max-width: none !important;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter) 4px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 var(--gutter);
+  scrollbar-width: none;
+}
+.st-key-today_carousel::-webkit-scrollbar {
+  display: none;
+}
+.st-key-today_carousel [class*="st-key-tap_today_"] {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+/* 편지 묶음 목록 */
+.kk-a-bundle-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.kk-a-stack {  /* 종이 두 장이 겹친 묶음 썸네일 */
+  position: relative;
+  flex: 0 0 40px;
+  margin-right: 4px;
+}
+.kk-a-stack > span:first-child {
+  position: absolute;
+  inset: 4px -4px -4px 4px;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.kk-a-stack--single > span:first-child {
+  display: none;
+}
+
+/* 베타 화면의 버튼도 터치 영역 44px 이상 */
+.st-key-beta_start button,
+.st-key-beta_next button,
+.st-key-beta_rate_next button,
+.st-key-beta_submit button,
+.st-key-beta_free button {
+  min-height: 48px;
+}

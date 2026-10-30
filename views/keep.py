@@ -19,6 +19,12 @@ ss = st.session_state
 user_id = ss.demo_user_id
 today = ss.demo_date
 
+# 베타 테스트는 샘플 서랍으로만 한다. 테스터의 실제 편지 사진은 받지 않는다
+if ss.get("beta_mode"):
+    large_title("보관하기")
+    st.html('<p class="kk-empty">체험판에서는 사진을 올리지 않아요. 샘플 서랍의 편지로 둘러봐 주세요.</p>')
+    st.stop()
+
 DESIGN = "design"  # 표지 선택값: 꼬깃 표지
 
 ss.setdefault("keep_step", "photos")  # photos → info

@@ -1,13 +1,12 @@
 """서랍(홈): 시간대 인사, 도착한 편지 배너, 오늘 꺼내 보면 좋을 편지, 마음을 건넨 사람들."""
 
-from datetime import datetime
-
 import streamlit as st
 
 import db
+from beta.flow import home_variant, today_exclude
 from components.letter_card import arrived_banner, today_card
 from components.people import HOME_PEOPLE, home_order, people_grid
-from components.ui import large_title, section_title, tappable
+from components.ui import large_title, now, section_title, tappable
 
 
 def greeting(hour: int) -> str:
@@ -21,10 +20,17 @@ def greeting(hour: int) -> str:
     return "오늘도 애썼어요"
 
 
+# 베타 테스트에서 이전 홈(A안)과 비교하는 차례면 그 홈을 보여 준다
+if home_variant() == "A":
+    from beta.home_a import render_home_a
+
+    render_home_a()
+    st.stop()
+
 user = db.get_user(st.session_state.demo_user_id)
 today = st.session_state.demo_date
 
-large_title("서랍", f"{user.nickname}님, {greeting(datetime.now().hour)}")
+large_title("서랍", f"{user.nickname}님, {greeting(now().hour)}")
 
 # ---------- 도착한 편지 배너 (앱 내 알림) ----------
 arrived = db.list_arrived(user.id)
@@ -34,7 +40,7 @@ if arrived:
 
 # ---------- 오늘 꺼내 보면 좋을 편지: 한 통만 담백하게 ----------
 # 오늘 골라 둔 편지가 더 있으면 작게 권하고, 오늘의 편지 화면에 모아 둔다
-today_items = db.pick_today_letters(user.id, today)
+today_items = db.pick_today_letters(user.id, today, exclude=today_exclude())
 if today_items:
     section_title("오늘 꺼내 보면 좋을 편지")
     first = today_items[0]
