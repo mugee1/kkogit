@@ -93,6 +93,7 @@ SUB_PAGES = {
     "drawer": [
         st.Page("views/bundle.py", title="편지 묶음", url_path="bundle"),
         st.Page("views/letter.py", title="편지", url_path="letter"),
+        st.Page("views/write.py", title="답장 쓰기", url_path="write"),
     ],
 }
 page = st.navigation(
@@ -106,9 +107,11 @@ if active_tab is None:
         None,
     )
 
-# 보관 완료 화면은 한 번만 보여 준다. 다른 화면으로 나가면 닫는다.
+# 보관 완료·보내기 완료 화면은 한 번만 보여 준다. 다른 화면으로 나가면 닫는다.
 if active_tab != "keep":
     st.session_state.pop("keep_result", None)
+if page.url_path != "write":
+    st.session_state.pop("write_result", None)
 
 # ---------- 전역 스타일 ----------
 # theme.css + 선택된 탭 스타일을 한 번에 주입한다.

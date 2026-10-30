@@ -586,9 +586,10 @@ button[disabled] {
   font-weight: 500;
 }
 
-/* ---------- 하단 주요 버튼 (탭 바 바로 위에 고정, 엄지 영역): 보관하기, 편지 묶음 ---------- */
+/* ---------- 하단 주요 버튼 (탭 바 바로 위에 고정, 엄지 영역): 보관하기, 편지 묶음, 답장 쓰기 ---------- */
 .st-key-keep_cta,
-.st-key-bundle_cta {
+.st-key-bundle_cta,
+.st-key-write_cta {
   position: fixed;
   left: 50%;
   bottom: calc(var(--tabbar-h) + var(--safe-bottom));
@@ -601,11 +602,13 @@ button[disabled] {
   background: var(--bg);
 }
 .st-key-keep_cta button,
-.st-key-bundle_cta button {
+.st-key-bundle_cta button,
+.st-key-write_cta button {
   min-height: 48px;
 }
 [data-testid="stMainBlockContainer"]:has(.st-key-keep_cta),
-[data-testid="stMainBlockContainer"]:has(.st-key-bundle_cta) {
+[data-testid="stMainBlockContainer"]:has(.st-key-bundle_cta),
+[data-testid="stMainBlockContainer"]:has(.st-key-write_cta) {
   padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 140px);
 }
 
@@ -747,6 +750,22 @@ div.stDialog button[kind="secondary"] {
 @keyframes kk-drop {
   from { transform: translateY(0); }
   to { transform: translateY(180px); }
+}
+/* 보내기 (components/motion.py의 fold_and_send): 접힌 편지가 오른쪽 위로 날아간다. 서랍 없음 */
+.kk-motion-send .kk-motion-paper {
+  top: 40px;
+  animation: kk-fly 320ms ease-in 340ms both;
+}
+.kk-motion-send .kk-stamp {  /* 접히는 위쪽 절반에 붙은 작은 우표 */
+  top: 10px;
+  right: 14px;
+  width: 22px;
+  height: 28px;
+  outline-width: 1px;
+}
+@keyframes kk-fly {
+  from { transform: none; opacity: 1; }
+  to { transform: translate(96px, -40px) rotate(-14deg) scale(0.6); opacity: 0; }
 }
 .kk-motion-after {
   animation: kk-fade-up 240ms ease-out 560ms both;
@@ -1152,7 +1171,8 @@ div.stDialog button[kind="secondary"] {
   color: var(--text);
 }
 
-/* 우표 (components/stamp.py): 톱니 테두리 + 해와 언덕 낙서 */
+/* 우표 (components/stamp.py): 톱니 테두리 + 손그림 SVG(assets/stamps/)
+   SVG 안의 선은 .ln, 코랄 포인트는 .pt. 코랄은 우표 하나에 한 곳만 쓴다. */
 .kk-stamp {
   position: absolute;
   top: 32px;
@@ -1165,26 +1185,33 @@ div.stDialog button[kind="secondary"] {
   transform: rotate(4deg);
   overflow: hidden;
 }
-.kk-stamp i::before,
-.kk-stamp i::after {
-  content: "";
-  position: absolute;
+.kk-stamp svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
-.kk-stamp i::before {  /* 해 */
-  right: 6px;
-  top: 7px;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--primary);
+.kk-stamp .ln {
+  fill: none;
+  stroke: var(--text-secondary);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
-.kk-stamp i::after {  /* 언덕 */
-  left: -3px;
-  right: -3px;
-  bottom: 0;
-  height: 18px;
-  background: var(--text-disabled);
-  clip-path: polygon(0 100%, 0 55%, 30% 20%, 55% 60%, 75% 35%, 100% 70%, 100% 100%);
+.kk-stamp .ln--dash {
+  stroke-dasharray: 2 3;
+}
+.kk-stamp .pt {
+  fill: var(--primary);
+}
+.kk-stamp--inline {  /* 종이 위가 아니라 목록·바텀시트 안에 놓인 우표 */
+  position: relative;
+  top: auto;
+  right: auto;
+  flex: 0 0 auto;
+}
+.kk-stamp--small {
+  width: 32px;
+  height: 40px;
 }
 
 /* 편지 종류 표시 (제목 위): 아이콘 + 이름 */
@@ -1225,5 +1252,79 @@ div.stDialog button[kind="secondary"] {
 @media (prefers-reduced-motion: reduce) {
   .kk-unfold {
     animation: none;
+  }
+}
+
+/* ============================================================
+   답장 쓰기 (views/write.py)
+   ============================================================ */
+/* 직전 편지: 접어 두었다가 펼쳐 본다 */
+.stExpander details {
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.stExpander summary p {
+  font-size: 15px;
+  font-weight: 500;
+}
+.stExpander .kk-read-paper {
+  min-height: 0;
+}
+.kk-write-from {
+  margin-top: -4px;
+  text-align: right;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* 우표 줄: 누르면 우표 바텀시트 */
+.kk-stamp-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  padding: 14px 4px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.kk-stamp-empty {  /* 아직 우표를 안 붙인 자리 */
+  flex: 0 0 32px;
+  height: 40px;
+  border: 1.5px dashed var(--text-disabled);
+  border-radius: 2px;
+}
+
+/* 우표 바텀시트의 고르기 칸 (선택: 코랄 테두리 + 체크 + 굵은 이름) */
+.kk-stamp-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 0 10px;
+  border-radius: var(--radius-card);
+  background: var(--bg);
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+.kk-stamp-option .kk-stamp {
+  width: 48px;
+  height: 60px;
+  background: var(--surface);
+}
+.kk-stamp-option .kk-cover-label {
+  margin-top: 12px;
+}
+.kk-stamp-option--selected {
+  outline-color: var(--primary);
+}
+.kk-stamp-option--selected .kk-cover-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kk-motion-send {  /* 날아가는 종이 대신 바로 완료 문구를 보여 준다 */
+    display: none;
   }
 }

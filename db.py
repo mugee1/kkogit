@@ -240,6 +240,33 @@ def keep_handwritten(
     return letter_id, relation_id
 
 
+# ---------- 답장 보내기 ----------
+
+def send_letter(
+    user_id: int, relation: Relation, body: str, stamp: str, written_at: date
+) -> int:
+    """편지를 보낸다. 상대가 앱 사용자면 상대 서랍에 '도착한 편지'(status=sent)로 들어간다.
+
+    상대 쪽에 나를 가리키는 관계가 없으면 만들어 준다(그래야 상대 서랍에 묶음이 생긴다).
+    상대가 앱 사용자가 아니면 receiver_user_id 없이 내 묶음에만 쌓인다.
+    """
+    partner_id = relation.partner_user_id
+    if partner_id is not None and not any(
+        r.partner_user_id == user_id for r in list_relations(partner_id)
+    ):
+        create_relation(partner_id, get_user(user_id).nickname, relation.type, user_id)
+    return create_letter(
+        relation.id,
+        "written",
+        sender_user_id=user_id,
+        receiver_user_id=partner_id,
+        body=body.strip(),
+        stamp=stamp,
+        written_at=written_at,
+        status="sent",
+    )
+
+
 # ---------- 조회 ----------
 
 def list_users() -> list[User]:
@@ -266,6 +293,7 @@ def list_bundle_letters(user_id: int, relation: Relation) -> list[Letter]:
     """사람별 편지 묶음: 내가 보관한 손편지 + 그 사람과 주고받은 편지를 시간순으로.
 
     임시 저장(draft)은 보낸 사람에게만 보인다.
+    상대가 앱 사용자가 아니면, 내가 이 묶음에서 쓴 편지(receiver 없음)도 함께 보인다.
     """
     with connect() as conn:
         rows = conn.execute(
@@ -276,6 +304,8 @@ def list_bundle_letters(user_id: int, relation: Relation) -> list[Letter]:
                      (sender_user_id = :uid AND receiver_user_id = :pid)
                   OR (sender_user_id = :pid AND receiver_user_id = :uid AND status != 'draft')
                ))
+               OR (kind = 'written' AND :pid IS NULL AND relation_id = :rid
+                   AND sender_user_id = :uid AND receiver_user_id IS NULL)
             ORDER BY written_at, id
             """,
             {"rid": relation.id, "uid": user_id, "pid": relation.partner_user_id},
@@ -319,7 +349,8 @@ def relation_for_letter(user_id: int, letter: Letter) -> Relation | None:
 
     받은 쓴 편지의 relation_id는 보낸 사람 쪽 관계라, 상대 사용자로 내 관계를 찾는다.
     """
-    if letter.kind == "handwritten":
+    if letter.kind == "handwritten" or (letter.sender_user_id == user_id and letter.receiver_user_id is None):
+        # 손편지, 또는 앱 사용자가 아닌 사람에게 쓴 편지: relation_id가 곧 내 관계
         relation = get_relation(letter.relation_id)
         return relation if relation and relation.user_id == user_id else None
     if letter.sender_user_id == user_id:
