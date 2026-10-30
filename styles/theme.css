@@ -96,6 +96,9 @@ html, body, .stApp {
   }
   [data-testid="stMainBlockContainer"] {
     min-height: 100vh;
+    /* stMain(세로 flex) 안에서 줄어들지 않게. min-height를 주면 내용보다 작게 줄어들 수 있어,
+       화면보다 긴 홈에서 아래쪽 내용이 프레임 배경 밖(흰 바깥 배경)으로 넘친다 */
+    flex-shrink: 0;
     background: var(--bg);
     border-left: 1px solid var(--line);
     border-right: 1px solid var(--line);
