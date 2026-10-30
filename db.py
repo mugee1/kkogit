@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS letters (
     kind              TEXT NOT NULL CHECK (kind IN ('handwritten', 'written')),
     images            TEXT NOT NULL DEFAULT '[]',
     body              TEXT NOT NULL DEFAULT '',
+    highlight         TEXT NOT NULL DEFAULT '',
     stamp             TEXT,
     written_at        TEXT,
     status            TEXT NOT NULL CHECK (status IN ('draft', 'sent', 'read')),
@@ -81,6 +82,16 @@ def init_db() -> None:
         columns = {r["name"] for r in conn.execute("PRAGMA table_info(letters)")}
         if "cover" not in columns:
             conn.execute("ALTER TABLE letters ADD COLUMN cover TEXT")
+        # 기억하고 싶은 한 줄 이전에 만든 DB: 열을 추가하고, 샘플 손편지에는 예시 한 줄을 채운다
+        if "highlight" not in columns:
+            conn.execute("ALTER TABLE letters ADD COLUMN highlight TEXT NOT NULL DEFAULT ''")
+            from seed import SAMPLE_HIGHLIGHTS
+
+            for image, line in SAMPLE_HIGHLIGHTS.items():
+                conn.execute(
+                    "UPDATE letters SET highlight = ? WHERE kind = 'handwritten' AND images LIKE ?",
+                    (line, f'["{image}"%'),
+                )
         empty = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0
     if empty:
         from seed import seed_sample_data
@@ -118,6 +129,7 @@ def _to_letter(row: sqlite3.Row) -> Letter:
         kind=row["kind"],
         images=json.loads(row["images"]),
         body=row["body"],
+        highlight=row["highlight"],
         stamp=row["stamp"],
         written_at=date.fromisoformat(row["written_at"]) if row["written_at"] else None,
         status=row["status"],
@@ -156,6 +168,7 @@ def create_letter(
     receiver_user_id: int | None = None,
     images: list[str] | None = None,
     body: str = "",
+    highlight: str = "",
     stamp: str | None = None,
     written_at: date | None = None,
     status: str = "read",
@@ -164,8 +177,8 @@ def create_letter(
     with connect() as conn:
         cur = conn.execute(
             "INSERT INTO letters (relation_id, sender_user_id, receiver_user_id, kind,"
-            " images, body, stamp, written_at, status, created_at, cover)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " images, body, highlight, stamp, written_at, status, created_at, cover)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 relation_id,
                 sender_user_id,
@@ -173,6 +186,7 @@ def create_letter(
                 kind,
                 json.dumps(images or [], ensure_ascii=False),
                 body,
+                highlight.strip(),
                 stamp,
                 written_at.isoformat() if written_at else None,
                 status,

@@ -56,6 +56,7 @@ class Letter:
     kind: LetterKind
     images: list[str] = field(default_factory=list)  # data/images/ 기준 상대 경로
     body: str = ""
+    highlight: str = ""  # 기억하고 싶은 한 줄(선택). 손글씨를 사용자가 옮겨 적는다
     stamp: str | None = None
     written_at: date | None = None  # 받은 날짜(손편지) / 쓴 날짜(쓴 편지)
     status: LetterStatus = "read"

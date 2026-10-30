@@ -37,8 +37,8 @@ else:
 
 # ---------- 답장 쓰기 (하단 고정, 엄지 영역) ----------
 with st.container(key="bundle_cta"):
-    # 마지막 편지가 내가 보낸 편지면, 상대의 답장을 기다리는 중
+    # 마지막 편지가 내가 보낸 편지면, 잘 전해졌다고만 알린다 (기다림을 강조하지 않는다)
     if letters and letters[-1].sender_user_id == user_id:
-        st.html(f'<p class="kk-hint kk-hint--center">{escape(relation.partner_name)}님의 답장을 기다리고 있어요</p>')
+        st.html(f'<p class="kk-hint kk-hint--center">마지막 편지는 {escape(relation.partner_name)}님에게 잘 전해졌어요</p>')
     if st.button("답장 쓰기", icon=":material/edit:", type="primary", width="stretch"):
         st.switch_page("views/write.py", query_params={"relation": relation.id})

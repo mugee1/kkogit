@@ -13,6 +13,13 @@ from PIL import Image, ImageDraw
 
 import db
 
+# 샘플 손편지의 '기억하고 싶은 한 줄' (첫 장 이미지 경로 → 한 줄). 도윤 편지는 비워 둔 경우의 예시
+SAMPLE_HIGHLIGHTS = {
+    "sample/jimin_2024_1.jpg": "네가 웃으면 내 하루도 같이 괜찮아져.",
+    "sample/seoyeon_2023.jpg": "어디에 있든 나는 늘 네 편이야.",
+    "sample/seoyeon_2025.jpg": "조금 늦어도 괜찮아. 천천히 와.",
+}
+
 PAPER = (245, 243, 237)  # Paper White
 INK = (36, 36, 36)       # Soft Black
 
@@ -69,16 +76,19 @@ def seed_sample_data() -> None:
     db.create_letter(
         h_jimin, "handwritten", receiver_user_id=haeun,
         images=[make_placeholder_letter("jimin_2024_1", 1), make_placeholder_letter("jimin_2024_2", 2)],
+        highlight=SAMPLE_HIGHLIGHTS["sample/jimin_2024_1.jpg"],
         written_at=date(2024, 10, 29),
     )
     db.create_letter(
         h_seoyeon, "handwritten", receiver_user_id=haeun,
         images=[make_placeholder_letter("seoyeon_2023", 3)],
+        highlight=SAMPLE_HIGHLIGHTS["sample/seoyeon_2023.jpg"],
         written_at=date(2023, 3, 14),
     )
     db.create_letter(
         h_seoyeon, "handwritten", receiver_user_id=haeun,
         images=[make_placeholder_letter("seoyeon_2025", 4)],
+        highlight=SAMPLE_HIGHLIGHTS["sample/seoyeon_2025.jpg"],
         written_at=date(2025, 10, 29),
     )
     db.create_letter(

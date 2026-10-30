@@ -26,7 +26,7 @@ if result:
     st.html(
         '<div class="kk-motion-after">'
         '<h1 class="kk-large-title">편지를 보냈어요</h1>'
-        f'<p class="kk-subtitle">{escape(result["name"])}님의 답장을 기다리고 있어요</p>'
+        f'<p class="kk-subtitle">{escape(result["name"])}님에게 마음을 잘 전했어요</p>'
         "</div>"
     )
     with st.container(key="write_cta"):

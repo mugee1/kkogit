@@ -19,6 +19,15 @@
   /* 파생 토큰: 새 색상이 아니라 Text Primary의 투명도 */
   --text-disabled: rgba(36, 36, 36, 0.38);  /* 비활성 요소 */
 
+  /* 사람 카드 6색 (홈 '마음을 건넨 사람들', 2026-10-30 추가)
+     Vivid Coral과 어울리도록 채도를 낮춘 색. 카드 배경에만 쓰고, 위 글자는 Text Primary(대비 7.8:1 이상) */
+  --card-1: #DFAAAD;  /* 코랄 클레이 */
+  --card-2: #DDBAA6;  /* 살구 */
+  --card-3: #D7C7A2;  /* 모래 */
+  --card-4: #B5C9B1;  /* 세이지 */
+  --card-5: #AFBFCF;  /* 더스티 블루 */
+  --card-6: #CDB7C5;  /* 모브 */
+
   /* 모서리 */
   --radius-card: 8px;
   --radius-btn: 8px;
@@ -272,18 +281,6 @@ input, textarea, select {
   height: var(--fold);
   background: linear-gradient(to bottom left, transparent 50%, var(--line) 50%);
 }
-.kk-paper-text {
-  margin: 0;
-  padding: 14px 12px;
-  font-size: 13px;
-  line-height: 1.6;
-  white-space: pre-line;
-  color: var(--text);
-  display: -webkit-box;
-  -webkit-line-clamp: 9;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 .kk-postmark {  /* 소인 모양 날짜 */
   position: absolute;
   right: 8px;
@@ -310,65 +307,167 @@ input, textarea, select {
   font-size: 11px;
 }
 
-/* ---------- 오늘 다시 펼쳐 볼 편지 (가로 캐러셀) ---------- */
-/* 화면 끝까지 스크롤되도록 좌우 여백만큼 밖으로 넓힌다 */
-.st-key-today_carousel {
-  width: calc(100% + 2 * var(--gutter)) !important;
-  max-width: none !important;
-  margin: 0 calc(-1 * var(--gutter));
-  padding: 0 var(--gutter) 4px;
-  scroll-snap-type: x mandatory;
-  scroll-padding: 0 var(--gutter);
-  scrollbar-width: none;
-}
-.st-key-today_carousel::-webkit-scrollbar {
-  display: none;
-}
-.st-key-today_carousel [class*="st-key-tap_today_"] {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-}
-.kk-meta {
+/* ---------- 오늘 꺼내 보면 좋을 편지 (편지 한 장, components/letter_card.py의 today_card) ---------- */
+/* 목록이 아니라 편지 한 장을 건네는 느낌: 넉넉한 여백, 접힌 모서리, 아래에 From.과 소인 */
+.kk-today-card {
+  --fold: 20px;
+  position: relative;
   display: flex;
-  gap: 6px;
-  margin: 8px 0 0;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 236px;
+  padding: 28px 24px 20px;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: inset 0 0 0 1px var(--line);
+  clip-path: polygon(0 0, calc(100% - var(--fold)) 0, 100% var(--fold), 100% 100%, 0 100%);
+}
+.kk-feature-quote {  /* 기억하고 싶은 한 줄: 20px Regular, 행간 1.6 */
+  flex: 1;
+  margin: 0;
+  padding-right: 8px;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+  color: var(--text);
+}
+.kk-feature-text {  /* 쓴 편지 본문 앞부분 */
+  flex: 1;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.7;
+  white-space: pre-line;
+  word-break: keep-all;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.kk-feature-photo {  /* 한 줄이 없는 손편지: 표지 썸네일 + 안내 */
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.kk-feature-photo .kk-paper {
+  flex: 0 0 72px;
+}
+.kk-feature-photo p {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+.kk-feature-photo b {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+.kk-feature-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.kk-feature-from {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.kk-feature-from span {
   font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
 }
-.kk-meta b {
+/* 다른 편지도 읽어 볼까요? (홈, 작게) */
+.st-key-today_more button {
+  min-height: 44px;
+  padding-left: 0;
+  color: var(--text-secondary);
+}
+.st-key-today_more button p {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ---------- 마음을 건넨 사람들: 정사각형 색 카드 2열 (components/letter_card.py의 person_card) ---------- */
+.st-key-people {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap-card);
+}
+.kk-person {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 14px;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--person-bg);
+}
+.kk-person--1 { --person-bg: var(--card-1); }
+.kk-person--2 { --person-bg: var(--card-2); }
+.kk-person--3 { --person-bg: var(--card-3); }
+.kk-person--4 { --person-bg: var(--card-4); }
+.kk-person--5 { --person-bg: var(--card-5); }
+.kk-person--6 { --person-bg: var(--card-6); }
+.kk-person > img {  /* 카드 위 이미지 (assets/cards/card_N.*) */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.kk-person-body {
+  position: relative;
+}
+.kk-person-name {
+  margin: 0;
+  font-size: 17px;
   font-weight: 600;
   color: var(--text);
 }
-
-/* ---------- 편지 묶음 목록 ---------- */
-.kk-bundle-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-height: 44px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
+.kk-person-meta {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
 }
-.kk-stack {  /* 종이 두 장이 겹친 묶음 썸네일 */
-  position: relative;
-  flex: 0 0 40px;
-  margin-right: 4px;
-}
-.kk-stack > span:first-child {
+.kk-person-new {  /* 새 편지: 흰 바탕 위 코랄 점 (색 카드 위에서도 보이게) */
   position: absolute;
-  inset: 4px -4px -4px 4px;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--radius-btn);
   background: var(--surface);
-  border-radius: var(--radius-card);
-  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
 }
-.kk-stack--single > span:first-child {
-  display: none;
+.kk-person-new i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
 }
 .kk-paper--mini {
   --fold: 8px;
 }
-.kk-lines {  /* 사진이 없는 묶음: 줄 노트 */
+.kk-lines {  /* 사진이 없는 편지: 줄 노트 */
   position: absolute;
   inset: 12px 7px 8px;
   background: repeating-linear-gradient(to bottom, transparent 0 7px, var(--line) 7px 8px);
@@ -426,15 +525,24 @@ input, textarea, select {
   flex: 1;
   min-width: 0;
 }
-.kk-banner-icon {
+.kk-banner-icon {  /* 홈의 코랄은 줄인다: 아이콘은 기본색, 새 소식은 제목 옆 점 하나로 */
   font-size: 24px;
-  color: var(--primary);
+  color: var(--text-secondary);
 }
 .kk-banner-title {
   margin: 0;
   font-size: 17px;
   font-weight: 600;
   color: var(--text);
+}
+.kk-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  vertical-align: middle;
 }
 .kk-banner-sub {
   margin: 2px 0 0;
@@ -833,8 +941,12 @@ div.stDialog button[kind="secondary"] {
    꼬깃 표지 (기본 썸네일 5종, components/covers.py)
    종이(.kk-paper) 안을 채운다. 크기는 표지 너비 기준(cqw)이라
    서랍 카드(148px)와 묶음 썸네일(40px)에서 같은 모양으로 줄어든다.
-   코랄은 표지 하나에 작은 포인트 하나까지만 쓴다.
+   코랄은 표지 하나에 작은 포인트 하나까지만 쓴다(--cover-accent).
+   홈(서랍)에서는 코랄을 버튼·탭·새 편지 점으로만 한정하므로 포인트를 Text Secondary로 바꾼다.
    ============================================================ */
+.kk-today-card {
+  --cover-accent: var(--text-secondary);
+}
 .kk-cover {
   position: absolute;
   inset: 0;
@@ -861,7 +973,7 @@ div.stDialog button[kind="secondary"] {
   width: 14cqw;
   height: 14cqw;
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--cover-accent, var(--primary));
   transform: translate(-50%, -50%);
 }
 
@@ -877,7 +989,7 @@ div.stDialog button[kind="secondary"] {
   bottom: 0;
   left: 16cqw;
   width: max(1px, 0.8cqw);
-  background: var(--primary);
+  background: var(--cover-accent, var(--primary));
 }
 
 /* 3. 우표: 톱니 테두리 우표 안에 해와 언덕 낙서 */
@@ -900,7 +1012,7 @@ div.stDialog button[kind="secondary"] {
   width: 12cqw;
   height: 12cqw;
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--cover-accent, var(--primary));
 }
 .kk-cover--3 i::after {  /* 언덕 */
   content: "";
@@ -1090,7 +1202,7 @@ div.stDialog button[kind="secondary"] {
 .kk-unfold {
   margin-top: 8px;
   transform-origin: top center;
-  animation: kk-unfold 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: kk-unfold 400ms cubic-bezier(0.2, 0.8, 0.2, 1) both;  /* 범위 상한으로 천천히 */
 }
 @keyframes kk-unfold {
   from { opacity: 0; transform: perspective(900px) rotateX(-70deg) scaleY(0.6); }

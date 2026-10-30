@@ -1,4 +1,4 @@
-"""편지 관련 카드 HTML: 오늘 다시 펼쳐 볼 편지 카드, 편지 묶음 행, 묶음 안의 편지 한 통, 도착 배너.
+"""편지 관련 카드 HTML: 오늘 꺼내 보면 좋을 편지 카드, 마음을 건넨 사람 카드, 묶음 안의 편지 한 통, 도착 배너.
 
 화면 로직 없이 HTML 문자열만 만든다. 스타일은 styles/theme.css의 .kk-* 클래스.
 """
@@ -9,6 +9,7 @@ import base64
 import io
 from datetime import date
 from html import escape
+from pathlib import Path
 
 import streamlit as st
 from PIL import Image
@@ -83,42 +84,69 @@ def _paper(inner: str, *, postmark: date | None = None, extra_class: str = "") -
 
 
 def today_card(item: LetterInDrawer, today: date) -> str:
-    """'오늘 다시 펼쳐 볼 편지' 카드: 손편지면 고른 표지(사진 또는 꼬깃 표지), 쓴 편지면 본문 일부."""
+    """'오늘 꺼내 보면 좋을 편지' 한 통: 화면 너비의 편지 한 장 (홈과 오늘의 편지 목록이 함께 쓴다).
+
+    - 기억하고 싶은 한 줄이 있으면 그 한 줄이 먼저 보인다(펼치면 원본 손글씨).
+    - 없으면 쓴 편지는 본문 앞부분, 손편지는 표지 썸네일과 '펼치면 원본 손글씨가 보여요'.
+    """
     letter = item.letter
-    inner = letter_cover(letter.cover_image, letter.cover_design)
-    if inner is None:
-        inner = f'<p class="kk-paper-text">{escape(letter.body)}</p>'
-    pages = f" · {len(letter.images)}장" if len(letter.images) > 1 else ""
+    if letter.highlight:
+        body = f'<p class="kk-feature-quote">{escape(letter.highlight)}</p>'
+    elif letter.kind == "written":
+        body = f'<p class="kk-feature-text">{escape(letter.body)}</p>'
+    else:
+        cover = letter_cover(letter.cover_image, letter.cover_design, 200) or '<span class="kk-lines"></span>'
+        pages = f" · {len(letter.images)}장" if len(letter.images) > 1 else ""
+        body = (
+            f'<div class="kk-feature-photo">{_paper(cover, extra_class="kk-paper--mini")}'
+            f'<p><b>손편지{pages}</b><span>펼치면 원본 손글씨가 보여요</span></p></div>'
+        )
+    mark = _postmark(letter.written_at, "kk-postmark--inline") if letter.written_at else ""
     return (
-        f'<div class="kk-today-card">'
-        f"{_paper(inner, postmark=letter.written_at)}"
-        f'<p class="kk-meta"><b>{escape(item.relation.partner_name)}</b>'
-        f"<span>{time_ago(letter.written_at, today)}{pages}</span></p>"
-        f"</div>"
+        f'<article class="kk-today-card"><i class="kk-fold"></i>{body}'
+        f'<div class="kk-feature-foot"><p class="kk-feature-from">From. {escape(item.relation.partner_name)}'
+        f"<span>{time_ago(letter.written_at, today)}</span></p>{mark}</div>"
+        f"</article>"
     )
 
 
-def bundle_row(summary: BundleSummary) -> str:
-    """사람별 편지 묶음 한 줄: 종이 묶음 썸네일 + 이름 + 관계·편지 수·마지막 날짜."""
+PERSON_COLORS = 6  # 사람 카드 색 수 (theme.css의 --card-1~6)
+CARD_IMAGE_DIR = Path(__file__).parent.parent / "assets" / "cards"
+
+
+@st.cache_data(show_spinner=False)
+def card_image_uri(color: int) -> str | None:
+    """assets/cards/card_{색 번호}.png(또는 .jpg·.webp·.svg)가 있으면 data URI. 없으면 None."""
+    for ext, mime in (("png", "image/png"), ("jpg", "image/jpeg"), ("webp", "image/webp"), ("svg", "image/svg+xml")):
+        path = CARD_IMAGE_DIR / f"card_{color}.{ext}"
+        if path.is_file():
+            return f"data:{mime};base64," + base64.b64encode(path.read_bytes()).decode()
+    return None
+
+
+def person_color(relation_id: int) -> int:
+    """사람마다 정해진 카드 색(1~6). 묶음 id로 정해서 다시 열어도 같은 색이다."""
+    return (relation_id - 1) % PERSON_COLORS + 1
+
+
+def person_card(summary: BundleSummary) -> str:
+    """마음을 건넨 사람 한 명: 정사각형 색 카드 + 이름 + 관계·마지막 날짜.
+
+    카드 위 이미지는 assets/cards/card_{색 번호}.*로 따로 넣는다. 없으면 색만 보인다.
+    편지 수처럼 쌓이는 숫자는 보여 주지 않는다 (조용한 화면).
+    """
     rel = summary.relation
-    cover = letter_cover(summary.cover_image, summary.cover_design, 120) or '<span class="kk-lines"></span>'
-    stack = (
-        f'<div class="kk-stack{" kk-stack--single" if summary.letter_count < 2 else ""}"'
-        f' aria-hidden="true"><span></span>{_paper(cover, extra_class="kk-paper--mini")}</div>'
-    )
-
-    meta = [RELATION_LABELS[rel.type], f"편지 {summary.letter_count}통"]
+    color = person_color(rel.id)
+    uri = card_image_uri(color)
+    image = f'<img src="{uri}" alt="">' if uri else ""
+    meta = [RELATION_LABELS[rel.type]]
     if summary.last_written_at:
         meta.append(format_date(summary.last_written_at))
-    new = (
-        f'<span class="kk-new"><i></i>새 편지 {summary.unread_count}</span>'
-        if summary.unread_count else ""
-    )
+    new = '<span class="kk-person-new"><i></i>새 편지</span>' if summary.unread_count else ""
     return (
-        f'<div class="kk-bundle-row">{stack}'
-        f'<div class="kk-bundle-body"><p class="kk-bundle-name">{escape(rel.partner_name)}{new}</p>'
-        f'<p class="kk-bundle-meta">{" · ".join(meta)}</p></div>'
-        f'<span class="kk-chevron" aria-hidden="true">›</span></div>'
+        f'<div class="kk-person kk-person--{color}">{image}{new}'
+        f'<div class="kk-person-body"><p class="kk-person-name">{escape(rel.partner_name)}</p>'
+        f'<p class="kk-person-meta">{" · ".join(meta)}</p></div></div>'
     )
 
 
@@ -176,19 +204,19 @@ def timeline_entry(
 
 
 def arrived_banner(arrived: list[LetterInDrawer]) -> str:
-    """'편지가 도착했어요' 배너 (앱 내 알림)."""
+    """'편지가 도착했어요' 배너 (앱 내 알림). 통수는 세지 않고, 코랄은 점 하나만.
+
+    제목은 무슨 일인지 바로 알게, 부제는 누가 마음을 보냈는지 다정하게.
+    """
     first = arrived[0]
     name = escape(first.relation.partner_name)
-    if len(arrived) == 1:
-        title = "편지가 도착했어요"
-        sub = f"{name}님이 보낸 편지를 펼쳐 볼까요?"
-    else:
-        others = len({x.relation.id for x in arrived}) - 1
-        title = f"편지 {len(arrived)}통이 도착했어요"
-        sub = f"{name}님 외 {others}명이 보냈어요" if others else f"{name}님이 보냈어요"
+    others = len({x.relation.id for x in arrived}) - 1
+    title = "편지가 도착했어요"
+    sub = f"{name}님 외 {others}명이 마음을 보냈어요" if others else f"{name}님이 마음을 보냈어요"
     return (
         f'<div class="kk-banner">'
         f'<span class="kk-icon kk-banner-icon" aria-hidden="true">mail</span>'
-        f'<div><p class="kk-banner-title">{title}</p><p class="kk-banner-sub">{sub}</p></div>'
+        f'<div><p class="kk-banner-title">{title}<i class="kk-dot" aria-hidden="true"></i></p>'
+        f'<p class="kk-banner-sub">{sub}</p></div>'
         f'<span class="kk-chevron" aria-hidden="true">›</span></div>'
     )

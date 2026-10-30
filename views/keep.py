@@ -115,10 +115,10 @@ if result:
     pages = f" {result['pages']}장" if result["pages"] > 1 else ""
     st.html(
         '<div class="kk-motion-after">'
-        '<h1 class="kk-large-title">서랍에 넣어 둘게요</h1>'
+        '<h1 class="kk-large-title">서랍에 잘 넣어 뒀어요</h1>'
         f'<p class="kk-subtitle">{escape(result["name"])}님에게 받은 손편지{pages}'
         f' · {format_date(result["received_at"])}</p>'
-        '<div class="kk-suggest"><p class="kk-suggest-title">이 편지에 답장해 볼까요?</p>'
+        f'<div class="kk-suggest"><p class="kk-suggest-title">고마운 마음, {escape(result["name"])}님에게도 전해 볼까요?</p>'
         '<p class="kk-suggest-sub">답장은 이 손편지와 같은 묶음에 차곡차곡 쌓여요</p></div>'
         "</div>"
     )
